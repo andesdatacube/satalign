@@ -548,12 +548,12 @@ To use the <code>LGM</code> module, you need to install additional dependencies:
 <h2 id="how-to-use"><strong>How to use</strong> 🛠️</h2>
 <h3 id="align-an-eeimagecollection-with-satalignpccpcc"><strong>Align an ee.ImageCollection with <code>satalign.pcc.PCC</code></strong> 🌍</h3>
 <h4 id="load-libraries"><strong>Load libraries</strong></h4>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">ee</span>
-<span class="kn">import</span> <span class="nn">fastcubo</span>
-<span class="kn">import</span> <span class="nn">satalign</span>
-<span class="kn">import</span> <span class="nn">satalign.pcc</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">display</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ee</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fastcubo</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">satalign</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">satalign.pcc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">display</span>
 </code></pre></div>
 <h4 id="auth-and-init-gee"><strong>Auth and Init GEE</strong></h4>
 <div class="highlight"><pre><span></span><code><span class="c1"># Initialize depending on the environment</span>
@@ -635,7 +635,7 @@ To use the <code>LGM</code> module, you need to install additional dependencies:
 
 <p>Here's an addition to clarify that <code>datacube</code> and <code>reference_image</code> have already been defined:</p>
 <h3 id="align-an-image-collection-with-sataligneececc"><strong>Align an Image Collection with <code>satalign.eec.ECC</code></strong> 📚</h3>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">satalign.ecc</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">satalign.ecc</span>
 
 <span class="c1"># Initialize the ECC model</span>
 <span class="n">ecc_model</span> <span class="o">=</span> <span class="n">satalign</span><span class="o">.</span><span class="n">ecc</span><span class="o">.</span><span class="n">ECC</span><span class="p">(</span>
@@ -648,7 +648,7 @@ To use the <code>LGM</code> module, you need to install additional dependencies:
 </code></pre></div>
 <h3 id="align-using-local-features-with-satalignlgmlgm"><strong>Align using Local Features with <code>satalign.lgm.LGM</code></strong> 🧮</h3>
 <p>Here's the updated version with a note about using floating-point values or scaling:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">satalign.lgm</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">satalign.lgm</span>
 
 <span class="c1"># Initialize the LGM model</span>
 <span class="n">lgm_model</span> <span class="o">=</span> <span class="n">satalign</span><span class="o">.</span><span class="n">lgm</span><span class="o">.</span><span class="n">LGM</span><span class="p">(</span>
