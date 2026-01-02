@@ -1,12 +1,11 @@
 import warnings
-from typing import List, Optional, Tuple, Union
+from typing import Tuple, Union
 
-import xarray as xr
 import numpy as np
 import torch
+import xarray as xr
 
-from satalign.lightglue import (ALIKED, DISK, SIFT, DoGHardNet, LightGlue,
-                               SuperPoint)
+from satalign.lightglue import ALIKED, DISK, SIFT, DoGHardNet, LightGlue, SuperPoint
 from satalign.lightglue.utils import rbd
 from satalign.main import SatAlign
 
@@ -24,11 +23,11 @@ class LGM(SatAlign):
     ):
         """
         Args:
-            datacube (Union[np.ndarray, xr.DataArray]): Data cube to align with 
-                dimensions (time, bands, height, width). Ensure values are 
+            datacube (Union[np.ndarray, xr.DataArray]): Data cube to align with
+                dimensions (time, bands, height, width). Ensure values are
                 floats; if not, divide by 10,000.
-            reference (Union[np.ndarray, xr.DataArray]): Reference image with 
-                dimensions (bands, height, width). Ensure values are floats; 
+            reference (Union[np.ndarray, xr.DataArray]): Reference image with
+                dimensions (bands, height, width). Ensure values are floats;
                 if not, divide by 10,000.
             feature_model (str, optional): The feature extractor model. Defaults to
                 'superpoint'. Options are: 'superpoint'. Options are: 'superpoint',
@@ -91,7 +90,7 @@ class LGM(SatAlign):
         with torch.no_grad():
             feats0 = self.feature_model.extract(moving_image_torch, resize=None)
             if feats0["keypoints"].shape[1] == 0:
-                warnings.warn("No keypoints found in the moving image")
+                warnings.warn("No keypoints found in the moving image", stacklevel=2)
                 self.warning_status = True
                 return self.warp_matrix
 
@@ -110,7 +109,7 @@ class LGM(SatAlign):
         thres = dist < self.max_translations
 
         if thres.sum().item() == 0:
-            warnings.warn("No matching points found")
+            warnings.warn("No matching points found", stacklevel=2)
             self.warning_status = True
             return self.warp_matrix
 

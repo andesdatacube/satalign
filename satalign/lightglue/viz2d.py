@@ -61,10 +61,7 @@ def plot_images(imgs, titles=None, cmaps="gray", dpi=100, pad=0.5, adaptive=True
     if not isinstance(cmaps, (list, tuple)):
         cmaps = [cmaps] * n
 
-    if adaptive:
-        ratios = [i.shape[1] / i.shape[0] for i in imgs]  # W / H
-    else:
-        ratios = [4 / 3] * n
+    ratios = [i.shape[1] / i.shape[0] for i in imgs] if adaptive else [4 / 3] * n
     figsize = [sum(ratios) * 4.5, 4.5]
     fig, ax = plt.subplots(
         1, n, figsize=figsize, dpi=dpi, gridspec_kw={"width_ratios": ratios}

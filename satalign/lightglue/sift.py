@@ -204,7 +204,7 @@ class SIFT(Extractor):
         pred = []
         for k in range(len(image)):
             img = image[k]
-            if "image_size" in data.keys():
+            if "image_size" in data:
                 # avoid extracting points in padded areas
                 w, h = data["image_size"][k]
                 img = img[:, :h, :w]
