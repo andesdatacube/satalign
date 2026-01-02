@@ -261,7 +261,7 @@ class DKD(nn.Module):
         return keypoints, scoredispersitys, kptscores
 
 
-class InputPadder(object):
+class InputPadder:
     """Pads images such that dimensions are divisible by 8"""
 
     def __init__(self, h: int, w: int, divis_by: int = 8):

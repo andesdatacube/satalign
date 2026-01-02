@@ -1,7 +1,7 @@
 import warnings
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, ClassVar, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -21,7 +21,7 @@ else:
 torch.backends.cudnn.deterministic = True
 
 
-@torch.cuda.amp.custom_fwd(cast_inputs=torch.float32)
+@torch.amp.custom_fwd(device_type="cuda")
 def normalize_keypoints(
     kpts: torch.Tensor, size: Optional[torch.Tensor] = None
 ) -> torch.Tensor:
@@ -59,7 +59,9 @@ def apply_cached_rotary_emb(freqs: torch.Tensor, t: torch.Tensor) -> torch.Tenso
 
 
 class LearnableFourierPositionalEncoding(nn.Module):
-    def __init__(self, M: int, dim: int, F_dim: int = None, gamma: float = 1.0) -> None:
+    def __init__(
+        self, M: int, dim: int, F_dim: int | None = None, gamma: float = 1.0
+    ) -> None:
         super().__init__()
         F_dim = F_dim if F_dim is not None else dim
         self.gamma = gamma
@@ -312,7 +314,7 @@ def filter_matches(scores: torch.Tensor, th: float):
 
 
 class LightGlue(nn.Module):
-    default_conf = {
+    default_conf: ClassVar[dict] = {
         "name": "lightglue",  # just for interfacing
         "input_dim": 256,  # input descriptor dimension (autoselected from weights)
         "descriptor_dim": 256,
@@ -414,7 +416,7 @@ class LightGlue(nn.Module):
             self.load_state_dict(state_dict, strict=False)
         elif conf.weights is not None:
             path = Path(__file__).parent
-            path = path / "weights/{}.pth".format(self.conf.weights)
+            path = path / f"weights/{self.conf.weights}.pth"
             state_dict = torch.load(str(path), map_location="cpu")
 
         if state_dict:

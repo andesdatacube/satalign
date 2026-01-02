@@ -2,7 +2,7 @@ import os
 import pathlib
 import pickle
 import re
-from typing import List, Literal, Optional, Tuple, Union
+from typing import Literal, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,9 +10,9 @@ import pandas as pd
 import rasterio as rio
 import xarray as xr
 
+
 def create_array(
-    path: Union[str, pathlib.Path],
-    outdata: Union[str, pathlib.Path]
+    path: Union[str, pathlib.Path], outdata: Union[str, pathlib.Path]
 ) -> xr.DataArray:
     """Create a xarray DataArray from an folder of S2 images.
 
@@ -39,7 +39,7 @@ def create_array(
     # Create a data cube
     print("Creating data cube...")
     for file, date in zip(s2_files, s2_dates):
-        
+
         with rio.open(file) as src:
             data = src.read()
             if "s2_data" not in locals():
@@ -88,16 +88,14 @@ def load_array(outdata: Union[str, pathlib.Path]) -> xr.DataArray:
     """
 
     with open(outdata, "rb") as f:
-        s2_data = pickle.load(f)
+        s2_data = pickle.load(f)  # noqa: S301
 
     return s2_data
 
 
 # Plot the scatter plot ------------------------------------------------------
 def warp2df(
-    warps: list,
-    dates: np.ndarray,
-    date_cutoff: Optional[str] = "2022-01-31"
+    warps: list, dates: np.ndarray, date_cutoff: Optional[str] = "2022-01-31"
 ) -> pd.DataFrame:
     """Create a dataframe with the warps and dates
 
@@ -134,7 +132,7 @@ def plot_s2_scatter(warp_df: pd.DataFrame) -> Tuple[plt.Figure, plt.Axes]:
     # x2, y2 are the points before the fix in spatial alignment
     x1, y1 = warp_df[warp_df["after"]]["x"], warp_df[warp_df["after"]]["y"]
     x2, y2 = warp_df[~warp_df["after"]]["x"], warp_df[~warp_df["after"]]["y"]
-    
+
     # Build the scatter plot
     ax.scatter(x1, y1, label="After Cutoff date", color="blue", alpha=0.5)
     ax.scatter(x2, y2, label="Before  Cutoff date", color="red", alpha=0.5)
@@ -142,15 +140,16 @@ def plot_s2_scatter(warp_df: pd.DataFrame) -> Tuple[plt.Figure, plt.Axes]:
 
     return fig, ax
 
+
 def plot_rgb(
     warped_cube: np.ndarray,
     raw_cube: np.ndarray,
     dates: np.ndarray,
-    rgb_band: Optional[list] = [3, 2, 1],
+    rgb_band: list | None = None,
     intensity_factor: Optional[int] = 3,
     index: Optional[int] = 0,
 ) -> Tuple[plt.Figure, plt.Axes]:
-    """ Plot a RGB image from the raw and warped cube for
+    """Plot a RGB image from the raw and warped cube for
     a given index (date).
 
     Args:
@@ -158,13 +157,16 @@ def plot_rgb(
         raw_cube (np.ndarray): Original cube
         dates (np.ndarray): Dates of the cube
         rgb_band (Optional[list], optional): RGB bands to use. Defaults to [3, 2, 1].
-        intensity_factor (Optional[int], optional): A factor to scale the pixel values. 
+        intensity_factor (Optional[int], optional): A factor to scale the pixel values.
             Defaults to 3.
         index (Optional[int], optional): The index of the date. Defaults to 0.
 
     Returns:
         Tuple[plt.Figure, plt.Axes]: The figure and axes of the plot.
     """
+
+    if rgb_band is None:
+        rgb_band = [3, 2, 1]
 
     # create a image from the raw and warped cube
     warped_cube_img = warped_cube[index, rgb_band]
@@ -177,10 +179,10 @@ def plot_rgb(
 
     fig, axs = plt.subplots(1, 2, figsize=(10, 5))
     axs[0].imshow(to_display1)
-    axs[0].set_title(f"Original Cube - {str(dates[index])}")
+    axs[0].set_title(f"Original Cube - {dates[index]!s}")
     axs[0].axis("off")
     axs[1].imshow(to_display2)
-    axs[1].set_title(f"Aligned Cube - {str(dates[index])}")
+    axs[1].set_title(f"Aligned Cube - {dates[index]!s}")
     axs[1].axis("off")
 
     return fig, axs
@@ -192,7 +194,7 @@ def plot_animation1(
     dates: np.ndarray,
     png_output_folder: Union[str, pathlib.Path],
     gif_output_file: Union[str, pathlib.Path],
-    rgb_band: Union[int, list, None] = [3, 2, 1],
+    rgb_band: list | None = None,
     intensity_factor: int = 3,
     gif_delay: int = 20,
     gif_loop: int = 0,
@@ -203,7 +205,7 @@ def plot_animation1(
         warped_cube (np.ndarray): The aligned cube
         raw_cube (np.ndarray): The original cube
         dates (np.ndarray): The dates of the cube
-        png_output_folder (Union[str, pathlib.Path]): The folder to save the 
+        png_output_folder (Union[str, pathlib.Path]): The folder to save the
             png files.
         gif_output_file (Union[str, pathlib.Path]): The gif file to save.
         rgb_band (Union[int, list, None], optional): The RGB bands to use.
@@ -220,6 +222,9 @@ def plot_animation1(
     Returns:
         pathlib.Path: The path to the gif file.
     """
+
+    if rgb_band is None:
+        rgb_band = [3, 2, 1]
     # check if the system has ImageMagick installed
     if os.system("convert -version") != 0:
         raise ValueError("You need to install ImageMagick to create the gif")
@@ -235,7 +240,7 @@ def plot_animation1(
     for index in range(warped_cube.shape[0]):
         print(f"Creating image {index} of {warped_cube.shape[0]}")
 
-        fig, axs = plot_rgb(
+        _fig, _axs = plot_rgb(
             warped_cube=warped_cube,
             raw_cube=raw_cube,
             dates=dates,
@@ -244,7 +249,7 @@ def plot_animation1(
             index=index,
         )
 
-        plt.savefig(png_output_folder / ("%04d.png" % index))
+        plt.savefig(png_output_folder / f"{index:04d}.png")
         plt.close()
         plt.clf()
 
@@ -256,7 +261,7 @@ def plot_animation1(
         )
     except Exception as e:
         print(e)
-        raise ValueError("Error creating the gif")
+        raise ValueError("Error creating the gif") from e
 
     return gif_output_file
 
@@ -266,9 +271,9 @@ def plot_profile(
     raw_cube: np.ndarray,
     x_axis: Union[int, slice, None] = None,
     y_axis: Union[int, slice, None] = None,
-    rgb_band: Union[int, list, None] = [3, 2, 1],
+    rgb_band: list | None = None,
     intensity_factor: int = 3,
-    figsize: Tuple[float] = (10,5),
+    figsize: Tuple[float] = (10, 5),
     **kwargs: dict,
 ) -> Tuple[plt.Figure, plt.Axes]:
     """
@@ -288,6 +293,9 @@ def plot_profile(
         figsize (tuple(float), optional): figsize parameter to plt.subplots
         **kwargs (dict, optional): Extra parameters to plt.subplots
     """
+    if rgb_band is None:
+        rgb_band = [3, 2, 1]
+
     t1, c1, h1, w1 = warped_cube.shape
     t2, c2, h2, w2 = raw_cube.shape
 
@@ -339,17 +347,17 @@ def plot_animation2(
     png_output_folder: Union[str, pathlib.Path],
     gif_output_file: Union[str, pathlib.Path],
     dominant_axis: Literal["x", "y"] = "x",
-    rgb_band: Union[int, list, None] = [3, 2, 1],
+    rgb_band: Union[int, list, None] = None,
     intensity_factor: int = 3,
     gif_delay: int = 100,
     gif_loop: int = 0,
 ) -> pathlib.Path:
     """Create a gif animation from the raw and warped cube
-    
+
     Args:
         warped_cube (np.ndarray): The aligned cube
         raw_cube (np.ndarray): The original cube
-        png_output_folder (Union[str, pathlib.Path]): The folder to save the 
+        png_output_folder (Union[str, pathlib.Path]): The folder to save the
             png files.
         gif_output_file (Union[str, pathlib.Path]): The gif file to save.
         dominant_axis (Literal["x", "y"], optional): The dominant axis. Defaults to "x".
@@ -358,8 +366,10 @@ def plot_animation2(
         intensity_factor (int, optional): The intensity factor, used to scale
             the pixel values. Defaults to 3.
         gif_delay (int, optional): The delay between the images. Defaults to 20.
-        gif_loop (int, optional): The number of loops. Defaults to 0.    
+        gif_loop (int, optional): The number of loops. Defaults to 0.
     """
+    if rgb_band is None:
+        rgb_band = [3, 2, 1]
     # check if the system has ImageMagick installed
     if os.system("convert -version") != 0:
         raise ValueError("You need to install ImageMagick to create the gif")
@@ -381,7 +391,7 @@ def plot_animation2(
     for index in range(range_value):
         print(f"Creating image {index} of {warped_cube.shape[0]}")
         if dominant_axis == "x":
-            fig, axs = plot_profile(
+            _fig, _axs = plot_profile(
                 warped_cube=warped_cube,
                 raw_cube=raw_cube,
                 x_axis=None,
@@ -390,7 +400,7 @@ def plot_animation2(
                 intensity_factor=intensity_factor,
             )
         else:
-            fig, axs = plot_profile(
+            _fig, _axs = plot_profile(
                 warped_cube=warped_cube,
                 raw_cube=raw_cube,
                 x_axis=index,
@@ -398,7 +408,7 @@ def plot_animation2(
                 rgb_band=rgb_band,
                 intensity_factor=intensity_factor,
             )
-        plt.savefig(png_output_folder / ("%04d.png" % index))
+        plt.savefig(png_output_folder / f"{index:04d}.png")
         plt.close()
         plt.clf()
 
@@ -410,6 +420,6 @@ def plot_animation2(
         )
     except Exception as e:
         print(e)
-        raise ValueError("Error creating the gif")
+        raise ValueError("Error creating the gif") from e
 
     return gif_output_file

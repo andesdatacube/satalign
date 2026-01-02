@@ -1,7 +1,7 @@
-from .aliked import ALIKED  # noqa
-from .disk import DISK  # noqa
-from .dog_hardnet import DoGHardNet  # noqa
-from .lightglue import LightGlue  # noqa
-from .sift import SIFT  # noqa
-from .superpoint import SuperPoint  # noqa
-from .utils import match_pair  # noqa
+from .aliked import ALIKED
+from .disk import DISK
+from .dog_hardnet import DoGHardNet
+from .lightglue import LightGlue
+from .sift import SIFT
+from .superpoint import SuperPoint
+from .utils import match_pair

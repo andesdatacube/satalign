@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import xarray as xr
 
+
 class SatAlign(ABC):
     """
     An abstract class for multi-temporal image co-registration
@@ -28,7 +29,7 @@ class SatAlign(ABC):
         channel: Union[int, str] = "mean",
         interpolation: int = cv2.INTER_LINEAR + cv2.WARP_FILL_OUTLIERS,
         crop_center: Optional[int] = None,
-        rgb_bands: List[int] = [3, 2, 1],
+        rgb_bands: List[int] | None = None,
         border_mode: int = cv2.BORDER_REPLICATE,
         num_threads: int = 4,
         max_translations: int = 5.0,
@@ -45,7 +46,7 @@ class SatAlign(ABC):
                 (bands, height, width).
             channel (Union[int, str], optional): The channel or feature to be used for
                 alignment. Defaults to "gradients". The options are:
-                - "gradients": The gradients of the rgb channels of the image. 
+                - "gradients": The gradients of the rgb channels of the image.
                     It uses the Sobel operator to calculate the gradients.
                 - "mean": The mean of all the bands.
                 - "luminance": The luminance of the rgb channels of the image. It uses the following
@@ -72,8 +73,8 @@ class SatAlign(ABC):
             max_translations (int, optional): Estimated transformations are considered
                 incorrect when the norm of the translation component is larger than
                 this parameter. Defaults to 5.0.
-            border_value (int, optional): Value used to fill the border of the 
-                image when the warp matrix affects the border of the image. Defaults 
+            border_value (int, optional): Value used to fill the border of the
+                image when the warp matrix affects the border of the image. Defaults
                 to 0.
             warning_status (bool, optional): The warning status of the alignment
                 method. Defaults to False.
@@ -86,7 +87,7 @@ class SatAlign(ABC):
         # Set the class attributes (OPTIONAL)
         self.channel = channel
         self.interpolation = interpolation
-        self.rgb_bands = rgb_bands
+        self.rgb_bands = rgb_bands if rgb_bands is not None else [3, 2, 1]
         self.border_mode = border_mode
         self.crop_center = crop_center
         self.num_threads = num_threads
@@ -188,7 +189,7 @@ class SatAlign(ABC):
                 layer = img[self.rgb_bands]
             else:
                 layer = img
-            
+
             if self.channel == "gradients":
                 global_reference = cv2.Sobel(
                     layer.mean(0).astype(np.float32), cv2.CV_32F, 1, 1
@@ -202,12 +203,14 @@ class SatAlign(ABC):
             elif self.channel == "rgb_mean":
                 global_reference = layer.mean(0)
             else:
-                raise ValueError("The channel should be 'gradients', 'mean', 'luminance' or 'rgb_mean'")
-            
+                raise ValueError(
+                    "The channel should be 'gradients', 'mean', 'luminance' or 'rgb_mean'"
+                )
+
         elif isinstance(self.channel, int):
             global_reference = img[self.channel].copy()
         else:
-            raise ValueError(
+            raise TypeError(
                 "The channel should be a string (a specific method) or an integer (a band index)"
             )
 
@@ -237,7 +240,7 @@ class SatAlign(ABC):
 
         # Check if the translation is large
         if self.is_translation_large(warp_matrix):
-            warnings.warn("Estimated translation is too large")
+            warnings.warn("Estimated translation is too large", stacklevel=2)
             warp_matrix = self.warp_matrix
             self.warning_status = True
 
@@ -270,12 +273,15 @@ class SatAlign(ABC):
             warped_cube[index] = warped_image.copy()
 
         # Create the xarray dataset
-        return xr.DataArray(
-            data=warped_cube,
-            coords=self.datacube.coords,
-            dims=self.datacube.dims,
-            attrs=self.datacube.attrs,
-        ), warp_matrices
+        return (
+            xr.DataArray(
+                data=warped_cube,
+                coords=self.datacube.coords,
+                dims=self.datacube.dims,
+                attrs=self.datacube.attrs,
+            ),
+            warp_matrices,
+        )
 
     def run_numpy(self) -> np.ndarray:
         """
@@ -316,7 +322,7 @@ class SatAlign(ABC):
         ) as executor:
 
             futures = []
-            for index, img in enumerate(self.datacube):
+            for _index, img in enumerate(self.datacube):
                 futures.append(
                     executor.submit(
                         self.get_warped_image,
@@ -349,12 +355,12 @@ class SatAlign(ABC):
         ) as executor:
 
             futures = []
-            for index, img in enumerate(self.datacube.values):
+            for _index, img in enumerate(self.datacube.values):
                 futures.append(
                     executor.submit(
                         self.get_warped_image,
                         reference_image_feature=reference_layer,
-                        moving_image=img
+                        moving_image=img,
                     )
                 )
 
@@ -367,12 +373,15 @@ class SatAlign(ABC):
                 warp_matrices.append(warp_matrix)
 
         # Create the xarray dataset
-        return xr.DataArray(
-            data=warped_cube,
-            coords=self.datacube.coords,
-            dims=self.datacube.dims,
-            attrs=self.datacube.attrs,
-        ), warp_matrices
+        return (
+            xr.DataArray(
+                data=warped_cube,
+                coords=self.datacube.coords,
+                dims=self.datacube.dims,
+                attrs=self.datacube.attrs,
+            ),
+            warp_matrices,
+        )
 
     def run(self) -> Union[xr.Dataset, np.ndarray]:
         """
@@ -383,7 +392,7 @@ class SatAlign(ABC):
             return self.run_xarray()
         else:
             return self.run_numpy()
-        
+
     def run_multicore(self) -> Union[xr.Dataset, np.ndarray]:
         """
         Run the alignment method using multiple threads

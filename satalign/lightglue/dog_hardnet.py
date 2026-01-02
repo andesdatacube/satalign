@@ -20,7 +20,7 @@ class DoGHardNet(SIFT):
         self.laf_desc = self.laf_desc.to(device)
         self.laf_desc.descriptor = self.laf_desc.descriptor.eval()
         pred = []
-        if "image_size" in data.keys():
+        if "image_size" in data:
             im_size = data.get("image_size").long()
         else:
             im_size = None

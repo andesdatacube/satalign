@@ -1,8 +1,8 @@
 import warnings
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
-import xarray as xr
 import numpy as np
+import xarray as xr
 from skimage.registration import phase_cross_correlation
 
 from satalign.main import SatAlign
@@ -21,11 +21,11 @@ class PCC(SatAlign):
     ):
         """
         Args:
-            datacube (Union[np.ndarray, xr.DataArray]): Data cube to align with 
-                dimensions (time, bands, height, width). Ensure values are 
+            datacube (Union[np.ndarray, xr.DataArray]): Data cube to align with
+                dimensions (time, bands, height, width). Ensure values are
                 floats; if not, divide by 10,000.
-            reference (Union[np.ndarray, xr.DataArray]): Reference image with 
-                dimensions (bands, height, width). Ensure values are floats; 
+            reference (Union[np.ndarray, xr.DataArray]): Reference image with
+                dimensions (bands, height, width). Ensure values are floats;
                 if not, divide by 10,000.
             upsample_factor (Optional[int], optional): Upsampling factor. Images will
                 be registered to within ``1 / upsample_factor`` of a pixel. For example
@@ -76,7 +76,7 @@ class PCC(SatAlign):
             numpy.ndarray: The aligned source image
         """
         try:
-            shift, error, diffphase = phase_cross_correlation(
+            shift, _error, _diffphase = phase_cross_correlation(
                 reference_image=reference_image,
                 moving_image=moving_image,
                 upsample_factor=self.upsample_factor,
@@ -92,7 +92,7 @@ class PCC(SatAlign):
             warp_matrix[:2, 2] = shift[::-1]
 
         except Exception as err:
-            warnings.warn(f"Could not calculate the warp matrix: {err}")
+            warnings.warn(f"Could not calculate the warp matrix: {err}", stacklevel=2)
             warp_matrix = np.eye(*self.warp_matrix_size, dtype=np.float32)
             self.warning_status = True
 

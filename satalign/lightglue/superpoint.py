@@ -141,7 +141,7 @@ class SuperPoint(Extractor):
             c5, self.conf.descriptor_dim, kernel_size=1, stride=1, padding=0
         )
 
-        url = "https://github.com/cvg/LightGlue/releases/download/v0.1_arxiv/superpoint_v1.pth"  # noqa
+        url = "https://github.com/cvg/LightGlue/releases/download/v0.1_arxiv/superpoint_v1.pth"
         self.load_state_dict(torch.hub.load_state_dict_from_url(url))
 
         if self.conf.max_num_keypoints is not None and self.conf.max_num_keypoints <= 0:
@@ -150,7 +150,8 @@ class SuperPoint(Extractor):
     def forward(self, data: dict) -> dict:
         """Compute keypoints, scores, descriptors for image"""
         for key in self.required_data_keys:
-            assert key in data, f"Missing key {key} in data"
+            if key not in data:
+                raise KeyError(f"Missing key {key} in data")
         image = data["image"]
         if image.shape[1] == 3:
             image = rgb_to_grayscale(image)

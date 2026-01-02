@@ -2,15 +2,15 @@
 This module implements the eo-learn co-registration
 (they use Enhanced Cross Correlation). The code has
 been adapted from the `eo-learn` library. The original
-code can be found at: 
+code can be found at:
 
-https://github.com/sentinel-hub/eo-learn/blob/master/eolearn/coregistration/coregistration.py 
+https://github.com/sentinel-hub/eo-learn/blob/master/eolearn/coregistration/coregistration.py
 
 This source code is licensed under the MIT license.
 """
 
 import warnings
-from typing import List, Optional, Tuple, Union
+from typing import Tuple, Union
 
 import cv2
 import numpy as np
@@ -30,11 +30,11 @@ class ECC(SatAlign):
     ):
         """
         Args:
-            datacube (Union[np.ndarray, xr.DataArray]): Data cube to align with 
-                dimensions (time, bands, height, width). Ensure values are 
+            datacube (Union[np.ndarray, xr.DataArray]): Data cube to align with
+                dimensions (time, bands, height, width). Ensure values are
                 floats; if not, divide by 10,000.
-            reference (Union[np.ndarray, xr.DataArray]): Reference image with 
-                dimensions (bands, height, width). Ensure values are floats; 
+            reference (Union[np.ndarray, xr.DataArray]): Reference image with
+                dimensions (bands, height, width). Ensure values are floats;
                 if not, divide by 10,000.
             criteria (Tuple[int, int, float], optional): The strategy for the termination
                 of the iterative search algorithm. The cv2.TERM_CRITERIA_COUNT indicates
@@ -80,7 +80,9 @@ class ECC(SatAlign):
             )
 
         except cv2.error as cv2err:
-            warnings.warn(f"Could not calculate the warp matrix: {cv2err}")
+            warnings.warn(
+                f"Could not calculate the warp matrix: {cv2err}", stacklevel=2
+            )
             warp_matrix = np.eye(*self.warp_matrix_size, dtype=np.float32)
             self.warning_status = True
         return warp_matrix
