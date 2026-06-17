@@ -2,13 +2,13 @@ docs_dir: .
 
 # Project information
 site_name: Satalign
-site_url: https://ipl-uv.github.io/satalign/
+site_url: https://andesdatacube.github.io/satalign/
 site_author: IPL-UV Project
-site_description: Satalign is a Python library for the alignment of satellite images using deep learning models.
+site_description: Satalign is a Python library for multi-temporal co-registration of satellite imagery.
 
 # Repository
-repo_url: https://github.com/IPL-UV/satalign
-repo_name: satalign
+repo_url: https://github.com/andesdatacube/satalign
+repo_name: andesdatacube/satalign
 use_directory_urls: false
 
 # Configuration
@@ -39,11 +39,13 @@ theme:
     - navigation.top
     - navigation.expand
     - navigation.indexes
-    - header.autohide 
+    - header.autohide
+    - content.code.copy
+    - content.code.annotate
 
 # Page tree
 nav:
-  - Home: 
+  - Home:
     - README.md
     - Contributing: CONTRIBUTING.md
     - Changelog: CHANGELOG.md
@@ -53,23 +55,27 @@ nav:
 plugins:
   - search
   - same-dir
-  - mkdocstrings 
+  - mkdocstrings
   - awesome-pages
 
+# Markdown extensions
 markdown_extensions:
   - meta
   - admonition
-  - pymdownx.highlight
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
   - pymdownx.superfences
   - pymdownx.pathconverter
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - mdx_truly_sane_lists
-  - pymdownx.tasklist
+  - toc:
+      permalink: true
 
-# Extra CSS
+
 extra_css:
   - docs/style/style.css
-
-# Extra JavaScript
-extra_javascript:
-  - docs/js/copybutton.js

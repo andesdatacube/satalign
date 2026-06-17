@@ -1,4 +1,4 @@
-# 
+# satalign
 
 <p align="center">
   <img src="https://huggingface.co/datasets/JulioContrerasH/DataMLSTAC/resolve/main/banner_satalign.png" width="45%">
@@ -71,7 +71,7 @@ pip install satalign[deep]
 
 ```python
 import ee
-import fastcubo
+import cubexpress
 import satalign
 import satalign.pcc
 import matplotlib.pyplot as plt
@@ -83,22 +83,27 @@ from IPython.display import Image, display
 ```python
 # Initialize depending on the environment
 ee.Authenticate()
-ee.Initialize(opt_url="https://earthengine-highvolume.googleapis.com") # project = "name"
+ee.Initialize(opt_url="https://earthengine-highvolume.googleapis.com")  # project = "name"
 ```
+
 #### **Dataset**
+
 ```python
-# Download image collection
-table = fastcubo.query_getPixels_imagecollection(
-    point=(-75.71260, -14.18835),
-    collection="COPERNICUS/S2_HARMONIZED",
-    bands=["B2", "B3", "B4", "B8"],
-    data_range=["2023-12-01", "2023-12-31"],
-    edge_size=256,
-    resolution=10,
+# Discover and download a Sentinel-2 collection with cubexpress
+rt = cubexpress.point_to_rt(
+    lon=-75.71260, lat=-14.18835,
+    width=256, height=256, scale=10,
 )
-fastcubo.getPixels(table, nworkers=4, output_path="output")
+table = cubexpress.discover_images(
+    "COPERNICUS/S2_HARMONIZED", rt,
+    start="2023-12-01", end="2023-12-31",
+).select_bands("B2", "B3", "B4", "B8")
+
+cubexpress.express(table, outfolder="output", nworkers=4)
 ```
+
 #### **Align dataset**
+
 ```python
 # Create a data cube and select images if desired
 s2_datacube = satalign.utils.create_array("output", "datacube.pickle")
@@ -166,20 +171,21 @@ display(Image(filename='animation1.gif'))
 
 Here's an addition to clarify that `datacube` and `reference_image` have already been defined:
 
-### **Align an Image Collection with `satalign.eec.ECC`** 📚
+### **Align an Image Collection with `satalign.ecc.ECC`** 📚
 
 ```python
 import satalign.ecc
 
 # Initialize the ECC model
 ecc_model = satalign.ecc.ECC(
-    datacube=s2_datacube, 
+    datacube=s2_datacube,
     reference=reference_image,
     gauss_kernel_size=5,
 )
 # Run the alignment
 aligned_cube, warp_matrices = ecc_model.run()
 ```
+
 ### **Align using Local Features with `satalign.lgm.LGM`** 🧮
 
 Here's the updated version with a note about using floating-point values or scaling:
@@ -189,8 +195,8 @@ import satalign.lgm
 
 # Initialize the LGM model
 lgm_model = satalign.lgm.LGM(
-    datacube=datacube / 10_000, 
-    reference=reference_image / 10_000, 
+    datacube=s2_datacube / 10_000,
+    reference=reference_image / 10_000,
     feature_model="superpoint",
     matcher_model="lightglue",
 )
@@ -198,4 +204,4 @@ lgm_model = satalign.lgm.LGM(
 aligned_cube, warp_matrices = lgm_model.run()
 ```
 
-In this document, we presented three different examples of how to use SatAlign with PCC, ECC, and LGM for multi-temporal image co-registration. Each example shows how to download an image collection from Google Earth Engine, create a data cube, and align the images using one of the three methods provided by the SatAlign package.
+In this document, we presented three different examples of how to use satalign with PCC, ECC, and LGM for multi-temporal image co-registration. Each example shows how to download an image collection from Google Earth Engine with `cubexpress`, create a data cube, and align the images using one of the three methods provided by the satalign package.

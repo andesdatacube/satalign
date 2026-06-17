@@ -6,7 +6,8 @@ satcube.py
 __pycache__/
 *.py[cod]
 *$py.class
-
+dist/
+up.txt
 # C extensions
 *.so
 
